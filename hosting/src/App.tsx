@@ -1,9 +1,17 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import { getMatches } from './utils/scraper';
 
 function App() {
+  useEffect(() => {
+    const fetchMatches = async () => {
+      const matches = await getMatches();
+      console.log(matches);
+    };
+    fetchMatches();
+  }, []);
   const [count, setCount] = useState(0)
 
   return (
