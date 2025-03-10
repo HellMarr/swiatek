@@ -2,26 +2,36 @@ import axios from "axios";
 
 const URL = "https://swiatek-scraping.martinouais.workers.dev/";
 
+export interface Opponent {
+  name: string,
+  birthDate: Date,
+  size: string,
+  nationality: string,
+  rank: number,
+}
+
+export interface Match {
+  date: Date,
+  tournament: string,
+  courtType: string,
+  round: string,
+  result: 'Victory' | 'Loss'
+  score: string,
+  opponent: Opponent,
+
+}
+
 export async function getMatches() {
-    try {
+  let matchList: Match[] = [];
+  try {
         // Fetch the JavaScript file
         const { data } = await axios.get(URL);
-
-        // Clean up the fetched data by removing unnecessary spaces and newlines
-        const cleanedData = data.replace(/\s+/g, '').trim(); // remove excessive whitespace
-
-        // Log the cleaned-up data to inspect it
-        console.log("Cleaned data:", cleanedData); // log first 1000 characters for inspection
-
-        // Improved regex to capture the entire array, allowing for trailing spaces or other issues
-        const matchRegex = /varmorematchmx=*(\[\[.*?\]\]);/s;
-        const matchRegex2 = /varmatchmx=*(\[\[.*?\]\]);/s;
-
-        // Try to find the array using the regex
+        const cleanedData = data.replace(/ {2,}/g, "");
+        const matchRegex = /var\smorematchmx\s*=\s*(\[.*?\]);/s;
+        const matchRegex2 = /var\smatchmx\s*=\s*(\[.*?\]);/s;
         const match = matchRegex.exec(cleanedData);
-        const firstmatches = matchRegex2.exec(cleanedData);
+        const firstmatches = matchRegex2.exec(cleanedData);    
         if (match && firstmatches) {
-            console.log("Match found for morematchmx!");
 
             // Extract the matches and clean up any residual spaces or unexpected characters
             let matchesString = match[1].trim();
@@ -40,10 +50,29 @@ export async function getMatches() {
                     return matchDetails;
                 })
                 .sort((a, b) => b[0] - a[0]); // Sort by date in descending order
+            
+            matchList = sortedMatches.map((match) => {
+              const opponentBirthDate = new Date(match[16].substring(0, 4), match[16].substring(4, 6) - 1, match[16].substring(6, 8));
+              const opponent = {
+                name: match[11],
+                birthDate: opponentBirthDate,
+                size: match[17],
+                nationality: match[18],
+                rank: parseInt(match[12]),
+              }
+              return {
+                date: match[0],
+                tournament: match[1],
+                courtType: match[2],
+                round: match[8],
+                result: match[4] === 'W' ? 'Victory' : 'Loss',
+                score: match[9],
+                opponent
+              }
+            })
 
-            // Log the sorted matches
-            console.log("Sorted matches by date:", sortedMatches);
-
+           return matchList
+            
         } else {
             console.log("No match found for morematchmx.");
         }
