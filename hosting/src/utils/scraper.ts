@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getFlagUrl } from "./fetcher";
 
 const URL = "https://swiatek-scraping.martinouais.workers.dev/";
 
@@ -8,6 +9,7 @@ export interface Opponent {
   size: string,
   nationality: string,
   rank: number,
+  flag: string,
 }
 
 export interface Match {
@@ -51,32 +53,40 @@ export async function getMatches() {
                 })
                 .sort((a, b) => b[0] - a[0]); // Sort by date in descending order
             
-            matchList = sortedMatches.map((match) => {
-              const opponentBirthDate = new Date(match[16].substring(0, 4), match[16].substring(4, 6) - 1, match[16].substring(6, 8));
-              const opponent = {
-                name: match[11],
-                birthDate: opponentBirthDate,
-                size: match[17],
-                nationality: match[18],
-                rank: parseInt(match[12]),
-              }
-              return {
-                date: match[0],
-                tournament: match[1],
-                courtType: match[2],
-                round: match[8],
-                result: match[4] === 'W' ? 'Victory' : 'Loss',
-                score: match[9],
-                opponent
-              }
-            })
-
-           return matchList
-            
+            matchList = await Promise.all(
+              sortedMatches.map(async (match) => {
+                const opponentBirthDate = new Date(
+                  match[16].substring(0, 4),
+                  match[16].substring(4, 6) - 1,
+                  match[16].substring(6, 8)
+                );
+      
+                const opponent: Opponent = {
+                  name: match[11],
+                  birthDate: opponentBirthDate,
+                  size: match[17],
+                  nationality: match[18],
+                  flag: await getFlagUrl(match[18]), // Attente du flag ici
+                  rank: parseInt(match[12]),
+                };
+      
+                return {
+                  date: match[0],
+                  tournament: match[1],
+                  courtType: match[2],
+                  round: match[8],
+                  result: match[4] === "W" ? "Victory" : "Loss",
+                  score: match[9],
+                  opponent,
+                };
+              })
+            );
         } else {
             console.log("No match found for morematchmx.");
         }
+        return matchList
     } catch (error) {
+        return matchList
         console.error("Error fetching or parsing the matches:", error);
     }
 }
