@@ -1,5 +1,4 @@
 import axios from "axios";
-import { getFlagUrl } from "./fetcher";
 
 const URL = "https://swiatek-scraping.martinouais.workers.dev/";
 
@@ -9,7 +8,7 @@ export interface Opponent {
   size: string,
   nationality: string,
   rank: number,
-  flag: string,
+  // flag: string,
 }
 
 export interface Match {
@@ -17,7 +16,7 @@ export interface Match {
   tournament: string,
   courtType: string,
   round: string,
-  result: 'Victory' | 'Loss'
+  result: 'Victory' | 'Loss',
   score: string,
   opponent: Opponent,
 
@@ -36,8 +35,8 @@ export async function getMatches() {
         if (match && firstmatches) {
 
             // Extract the matches and clean up any residual spaces or unexpected characters
-            let matchesString = match[1].trim();
-            let matchesString2 = firstmatches[1].trim();
+            const matchesString = match[1].trim();
+            const matchesString2 = firstmatches[1].trim();
             // Parse the cleaned string into an actual array
             const matchesArray = JSON.parse(matchesString);
             const matchesArray2 = JSON.parse(matchesString2);
@@ -46,7 +45,7 @@ export async function getMatches() {
 
             // Format and sort the array by date in descending order
             const sortedMatches = allMatches
-                .map((matchDetails: any) => {
+                .map((matchDetails) => {
                     // Format the first column (date) into a Date object
                     matchDetails[0] = new Date(matchDetails[0].substring(0, 4), matchDetails[0].substring(4, 6) - 1, matchDetails[0].substring(6, 8));
                     return matchDetails;
@@ -66,7 +65,7 @@ export async function getMatches() {
                   birthDate: opponentBirthDate,
                   size: match[17],
                   nationality: match[18],
-                  flag: await getFlagUrl(match[18]), // Attente du flag ici
+                  // flag: await getFlagUrl(match[18]), // Attente du flag ici
                   rank: parseInt(match[12]),
                 };
       
