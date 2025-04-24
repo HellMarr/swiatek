@@ -26,7 +26,6 @@ function App() {
   useEffect(() => {
     const fetchMatches = async () => {
       const matches = await getMatches();
-      console.log(matches);
 
       const bagels = matches.filter(
         (match) => match.score.includes("6-0") || match.score.includes("0-6")
@@ -116,11 +115,8 @@ function App() {
     const surfaceClass = match.courtType.toLowerCase();
     return (
       <div className={`match-card ${surfaceClass}`}>
-        <div className={`surface-badge ${surfaceClass}`}>
-          {match.courtType}
-        </div>
         <div className="match-header">
-          <h3 className="match-title">{match.tournament}</h3>
+          <h3 className="match-title">{match.tournament} - {match.courtType}</h3>
           <span className="match-date">{formatDate(match.date.toString())}</span>
         </div>
         
@@ -162,7 +158,7 @@ function App() {
   };
 
   const BagelRankings = () => (
-    <div className="match-section">
+    <div className="match-section rankings-section">
       <h2>Bagel Rankings</h2>
       <div className="rankings-table">
         <table>
@@ -305,6 +301,9 @@ function App() {
         <div className="tab-content active">
           <TabContent />
         </div>
+      </div>
+      <div className="copyright">
+        <p>© 2025 Swiatek's Bakery</p>
       </div>
     </div>
   );
